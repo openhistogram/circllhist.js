@@ -452,9 +452,9 @@ function circllhist() {
     var o = {}
     for(var i=0; i<this.bvs.length; i++) {
       if(hex) {
-        o["" + hist_bucket_to_hex(this.bvs[i])] = this.bvs[i].count;
+        o["" + hist_bucket_to_hex(this.bvs[i].bucket)] = this.bvs[i].count;
       } else {
-        o["" + hist_bucket_to_double(this.bvs[i])] = this.bvs[i].count;
+        o["" + hist_bucket_to_double(this.bvs[i].bucket)] = this.bvs[i].count;
       }
     }
     return JSON.stringify(o);
