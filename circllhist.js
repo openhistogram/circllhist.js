@@ -115,8 +115,7 @@ function circllhist() {
                    exp: buff[offset + 1] };
     for(var i=tgt_type;i>=0;i--)
       count |= buff[offset+i+3] << (i * 8);
-    bucket.count = count;
-    h.bvs.push(bucket);
+    h.bvs.push({ bucket: bucket, count: count });
     return offset + 3 + tgt_type + 1;
   }
   
@@ -452,9 +451,9 @@ function circllhist() {
     var o = {}
     for(var i=0; i<this.bvs.length; i++) {
       if(hex) {
-        o["" + hist_bucket_to_hex(this.bvs[i])] = this.bvs[i].count;
+        o["" + hist_bucket_to_hex(this.bvs[i].bucket)] = this.bvs[i].count;
       } else {
-        o["" + hist_bucket_to_double(this.bvs[i])] = this.bvs[i].count;
+        o["" + hist_bucket_to_double(this.bvs[i].bucket)] = this.bvs[i].count;
       }
     }
     return JSON.stringify(o);
