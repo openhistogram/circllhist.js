@@ -1,6 +1,6 @@
 {
   "name": "circllhist.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Circonus log-linear histograms",
   "main": "index.js",
   "scripts": {

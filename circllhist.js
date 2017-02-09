@@ -93,8 +93,8 @@ function circllhist() {
         tgt_type = i;
         break;
       }
-    needed = 3 + tgt_type + 1;
-    var buff = new Uint8Array(needed);
+    var needed = 3 + tgt_type + 1;
+    var buff = new Buffer(needed);
     buff[0] = h.bvs[idx].bucket.val;
     buff[1] = h.bvs[idx].bucket.exp;
     buff[2] = tgt_type;
@@ -107,13 +107,13 @@ function circllhist() {
     var count = 0;
   
     if(idx != h.bvs.length) return -1;
-    if(len < 3) return -1;
+    if(buff.length < 3) return -1;
     var tgt_type = buff[offset + 2];
     if(tgt_type > BVL8) return -1;
-    if(len < 3 + tgt_type + 1) return -1;
+    if(buff.length < 3 + tgt_type + 1) return -1;
     var bucket = { val: buff[offset + 0],
                    exp: buff[offset + 1] };
-    for(i=tgt_type;i>=0;i--)
+    for(var i=tgt_type;i>=0;i--)
       count |= buff[offset+i+3] << (i * 8);
     bucket.count = count;
     h.bvs.push(bucket);
@@ -137,7 +137,7 @@ function circllhist() {
       len += part.length;
       parts.push(part);
     }
-    var buff = new UintArry(len), off = 2;
+    var buff = new Buffer(len), off = 2;
     htons(buff, 0, h.bvs.length)
     for (var i=0; i<parts.length; i++) {
       for(var j=0;j<parts[i].length;j++) {
@@ -147,21 +147,10 @@ function circllhist() {
     return buff;
   }
   
-  /*
-  ssize_t
-  hist_serialize_b64(const histogram_t *h, char *b64_serialized_histo_buff, ssize_t buff_len) {
-    ssize_t serialize_buff_length = hist_serialize_estimate(h);
-    void *serialize_buff = alloca(serialize_buff_length);
-    ssize_t serialized_length = hist_serialize(h, serialize_buff, serialize_buff_length);
-  
-    return mtev_b64_encode(serialize_buff, serialized_length, b64_serialized_histo_buff, buff_len);
-  }
-  */
-  
   function hist_deserialize(h, buff) {
-    if(h == null) h = hist_alloc();
+    if(h == null) h = new circllhist();
     h.bvs = [];
-    cnt = ntohs(buff, 0);
+    var cnt = ntohs(buff, 0);
     if(cnt == 0) return bytes_read;
     var offset = 2;
     while(cnt > 0) {
@@ -171,25 +160,6 @@ function circllhist() {
     }
     return h;
   }
-  
-  /*
-  ssize_t hist_deserialize_b64(histogram_t *h, const void *b64_string, ssize_t b64_string_len) {
-      int decoded_hist_len;
-      unsigned char* decoded_hist = alloca(b64_string_len);
-  
-      decoded_hist_len = mtev_b64_decode(b64_string, b64_string_len, decoded_hist, b64_string_len);
-  
-      if (decoded_hist_len < 2) {
-        return -1;
-      }
-  
-      ssize_t bytes_read = hist_deserialize(h, decoded_hist, decoded_hist_len);
-      if (bytes_read != decoded_hist_len) {
-        return -1;
-      }
-      return bytes_read;
-  }
-  */
   
   function hist_bucket_cmp(h1, h2) {
     // checks if h1 < h2 on the real axis.
@@ -211,6 +181,13 @@ function circllhist() {
     return 0;
   }
   
+  function hist_bucket_to_hex(hb) {
+    var buff = new Buffer(2);
+    buff[0] = hb.val;
+    buff[1] = hb.exp;
+    return "0x" + buff.toString('hex');
+  }
+
   function hist_bucket_to_double(hb) {
     if(hb.val > 99 || hb.val < -99) return NaN;
     if(hb.val < 10 && hb.val > -10) return 0.0;
@@ -470,9 +447,25 @@ function circllhist() {
   function hist_alloc() {
     return { bvs: [] }
   }
+
+  function hist_json(hex) {
+    var o = {}
+    for(var i=0; i<this.bvs.length; i++) {
+      if(hex) {
+        o["" + hist_bucket_to_hex(this.bvs[i])] = this.bvs[i].count;
+      } else {
+        o["" + hist_bucket_to_double(this.bvs[i])] = this.bvs[i].count;
+      }
+    }
+    return JSON.stringify(o);
+  }
   
   o.prototype.alloc = function() { this.bvs = []; };
   o.prototype.clear = function() { hist_clear(this) };
+  o.prototype.serialize = function() { return hist_serialize(this) };
+  o.prototype.serialize_b64 = function() { return hist_serialize(this).toString('base64') };
+  o.prototype.deserialize = function(buff) { return hist_deserialize(null, buff); };
+  o.prototype.deserialize_b64 = function(str) { return hist_deserialize(null, new Buffer(str, 'base64')) };
   o.prototype.bucket_count = function() { return hist_bucket_count(this); };
   o.prototype.merge = function(src) { hist_merge(this, src); };
   o.prototype.insert = function(val, count) { return hist_insert(this, val, count); };
@@ -486,11 +479,14 @@ function circllhist() {
   o.prototype.mean = function() { return this.approx_mean(); };
   o.prototype.quantile = function(qin,qout) { return this.approx_quantile(qin,qout); };
   o.prototype.sum = function() { return this.approx_sum(); };
+
+  o.prototype.json = hist_json;
   
   // These are just useful non-method helpers that should be exposed.
   o.prototype.double_to_hist_bucket = double_to_hist_bucket;
   o.prototype.hist_bucket_left = hist_bucket_left;
   o.prototype.hist_bucket_midpoint = hist_bucket_midpoint;
+  o.prototype.hist_bucket_to_hex = hist_bucket_to_hex;
   o.prototype.hist_bucket_to_double = hist_bucket_to_double;
   o.prototype.hist_bucket_to_double_bin_width = hist_bucket_to_double_bin_width;
   
