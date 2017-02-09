@@ -115,8 +115,7 @@ function circllhist() {
                    exp: buff[offset + 1] };
     for(var i=tgt_type;i>=0;i--)
       count |= buff[offset+i+3] << (i * 8);
-    bucket.count = count;
-    h.bvs.push(bucket);
+    h.bvs.push({ bucket: bucket, count: count });
     return offset + 3 + tgt_type + 1;
   }
   
