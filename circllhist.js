@@ -159,13 +159,22 @@ function circllhist() {
     }
     return h;
   }
-  
+
+  function hist_bucket_isnan(hb) {
+    var aval = Math.abs(hb.val);
+    if (99 <  aval) return 1; // in [100... ]: nan
+    if ( 9 <  aval) return 0; // in [10 - 99]: valid range
+    if ( 0 <  aval) return 1; // in [1  - 9 ]: nan
+    if ( 0 == aval) return 0; // in [0]:       zero bucket
+    return 0;
+  }
+
   function hist_bucket_cmp(h1, h2) {
     // checks if h1 < h2 on the real axis.
     if(h1.val == h2.val && h1.exp == h2.exp) return 0;
     /* place NaNs at the beginning always */
-    if(h1.val == 0xff) return 1;
-    if(h2.val == 0xff) return -1;
+    if(hist_bucket_isnan(h1)) return 1;
+    if(hist_bucket_isnan(h2)) return -1;
     /* zero values need special treatment */
     if(h1.val == 0) return (h2.val > 0) ? 1 : -1;
     if(h2.val == 0) return (h1.val < 0) ? 1 : -1;
@@ -188,21 +197,21 @@ function circllhist() {
   }
 
   function hist_bucket_to_double(hb) {
-    if(hb.val > 99 || hb.val < -99) return NaN;
-    if(hb.val < 10 && hb.val > -10) return 0.0;
+    if(hist_bucket_isnan(hb)) return NaN;
+    if(hb.val == 0) return 0.0;
     return (hb.val/10.0) * power_of_ten[hb.exp & 0xff];
   }
   
   function hist_bucket_to_double_bin_width(hb) {
-    if(hb.val > 99 || hb.val < -99) return NaN;
-    if(hb.val < 10 && hb.val > -10) return 0.0;
+    if(hist_bucket_isnan(hb)) return NaN;
+    if(hb.val == 0) return 0.0;
     return power_of_ten[hb.exp & 0xff]/10.0;
   }
   
   function hist_bucket_midpoint(input) {
-    if(input.val > 99 || input.val < -99) return NaN;
+    if(hist_bucket_isnan(input)) return NaN;
+    if(input.val == 0) return 0.0;
     var out = hist_bucket_to_double(input);
-    if(out == 0) return 0;
     var interval = hist_bucket_to_double_bin_width(input);
     if(out < 0) interval *= -1.0;
     return out + interval/2.0;
@@ -211,9 +220,9 @@ function circllhist() {
   /* This is used for quantile calculation,
    * where we want the side of the bucket closest to -inf */
   function hist_bucket_left(input) {
-    if(input.val > 99 || input.val < -99) return NaN;
+    if(hist_bucket_isnan(input)) return NaN;
+    if(input.val == 0) return 0.0;
     var out = hist_bucket_to_double(input);
-    if(out == 0) return 0;
     if(out > 0) return out;
     /* out < 0 */
     var interval = hist_bucket_to_double_bin_width(input);
@@ -223,7 +232,7 @@ function circllhist() {
   function hist_approx_mean(hist) {
     var divisor = 0.0, sum = 0.0;
     for(var i=0; i<hist.bvs.length; i++) {
-      if(hist.bvs[i].bucket.val > 99 || hist.bvs[i].bucket.val < -99) continue;
+      if(hist_bucket_isnan(hist.bvs[i].bucket)) continue;
       var midpoint = hist_bucket_midpoint(hist.bvs[i].bucket);
       var cardinality = hist.bvs[i].count;
       divisor += cardinality;
@@ -236,7 +245,7 @@ function circllhist() {
   function hist_approx_sum(hist) {
     var sum = 0.0;
     for(var i=0; i<hist.bvs.length; i++) {
-      if(hist.bvs[i].bucket.val > 99 || hist.bvs[i].bucket.val < -99) continue;
+      if(hist_bucket_isnan(hist.bvs[i].bucket)) continue;
       var value = hist_bucket_midpoint(hist.bvs[i].bucket);
       var cardinality = hist.bvs[i].count;
       sum += value * cardinality;
@@ -259,7 +268,7 @@ function circllhist() {
     /* Sum up all samples from all the bins */
     for (var i_b=0;i_b<hist.bvs.length;i_b++) {
       /* ignore NaN */
-      if(hist.bvs[i_b].bucket.val < -99 || hist.bvs[i_b].bucket.val > 99)
+      if(hist_bucket_isnan(hist.bvs[i_b].bucket))
         continue;
       total_cnt += hist.bvs[i_b].count;
     }
@@ -275,7 +284,7 @@ function circllhist() {
     /* Find the least bin (first) */
     for(var i_b=0;i_b<hist.bvs.length;i_b++) {
       /* We don't include NaNs */
-      if(hist.bvs[i_b].bucket.val < -99 || hist.bvs[i_b].bucket.val > 99)
+      if(hist_bucket_isnan(hist.bvs[i_b].bucket))
         continue;
       bucket_width = hist_bucket_to_double_bin_width(hist.bvs[i_b].bucket);
       bucket_left = hist_bucket_left(hist.bvs[i_b].bucket);

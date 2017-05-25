@@ -160,7 +160,7 @@ function q_test(vals, tin, expected) {
     var rv = h.approx_quantile(tin, out);
     if(rv != 0) notok("quantile ->", rv);
     else {
-      for(var i=0;i<tin.legnth;i++) {
+      for(var i=0;i<tin.length;i++) {
         if(!double_equals(out[i], expected[i])) {
           notok("q(" + tin[i] + ") -> " + out[i] + " != " + expected[i]);
           return;
@@ -171,7 +171,7 @@ function q_test(vals, tin, expected) {
   }
 }
 
-  return function() {
+return function() {
     bucket_tests();
     merge_tests();
   
@@ -202,7 +202,28 @@ function q_test(vals, tin, expected) {
     var s3 = [ 1.0, 2.0 ];
     var qin3 = [ 0.5 ];
     var qout3 = [ 1.1 ];
-    T("[ 1.0, 2.0 ] <- q[ 0.5 ] -> [ 1.1 ]", q_test(s3, 2, qin3, 1, qout3));
+    T("[ 1.0, 2.0 ] <- q[ 0.5 ] -> [ 1.1 ]", q_test(s3, qin3, qout3));
+
+    var s3 = [ 1.0, 2.0 ];
+    var qin3 = [ 0.5 ];
+    var qout3 = [ 1.1 ];
+    T("[ 1.0, 2.0 ] <- q[ 0.5 ] -> [ 1.1 ]", q_test(s3, qin3, qout3));
+
+    var s4 = [ 1e200, 1.0 ]; // out of range -> nan bucket
+    var qin4 = [ 0, 1 ];
+    var qout4 = [ 1.0, 1.1 ];
+    T("[1.0 NAN] <- q[0, 1] -> [1.0, 1.1]", q_test(s4, qin4, qout4));
+    T("mean_test(s4, 1.05)", mean_test(s4, 1.05));
+
+    s5 = [ 1e200, 1e200, 1e200,  0, 0, 1e-20, 1e-20, 1e-20, 1e-10 ];
+    qin5 = [ 0, 1 ];
+    qout5 = [ 0, 1.1e-10 ];
+    T("[ nan..., 0, ..., 1e-10 ] <- q[0,1] -> [0. 1.1e-10]", q_test(s5, qin5, qout5));
+
+    s6 = [ 0, 1 ];
+    qin6 = [ 0, 0.1 ];
+    qout6 = [ 0, 0 ];
+    T("[0,1] <- q[0, 0.1] -> [0,0]", q_test(s6, qin6, qout6));
 
     return failed ? false : true;
   }
