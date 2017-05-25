@@ -160,7 +160,7 @@ function q_test(vals, tin, expected) {
     var rv = h.approx_quantile(tin, out);
     if(rv != 0) notok("quantile ->", rv);
     else {
-      for(var i=0;i<tin.legnth;i++) {
+      for(var i=0;i<tin.length;i++) {
         if(!double_equals(out[i], expected[i])) {
           notok("q(" + tin[i] + ") -> " + out[i] + " != " + expected[i]);
           return;
@@ -171,7 +171,7 @@ function q_test(vals, tin, expected) {
   }
 }
 
-  return function() {
+return function() {
     bucket_tests();
     merge_tests();
   
