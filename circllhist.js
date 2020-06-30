@@ -257,7 +257,7 @@ function circllhist() {
    * -1 (empty histogram),
    * -2 (out of order quantile request)
    * -3 (out of bound quantile)
-   * -4 (non-empy target q_out array)
+   * -4 (non-empty target q_out array)
    */
   function hist_approx_quantile(hist, q_in, q_out) {
     if(q_out.length != 0) return -4;
@@ -344,7 +344,7 @@ function circllhist() {
       d *= 10;
       // avoid rounding problem at the bucket boundary
       // e.g. d=0.11 results in hb.val = 10 (shoud be 11)
-      // by allowing a error margin (in the order or magintude
+      // by allowing a error margin (in the order or magnitude
       // of the exected rounding errors of the above transformations)
       hb.val = sign * Math.floor(d + 1e-13);
       if(hb.val == 100 || hb.val == -100) {
@@ -373,7 +373,7 @@ function circllhist() {
     /* This is a simple binary search returning the idx in which
      * the specified bucket belongs... returning { found: bool, idx: }
      * the value would need to be inserted here (moving the
-     * rest of the buckets forward one.
+     * rest of the buckets forward one)
      */
     var rv = -1, l = 0, r = hist.bvs.length - 1, idx = 0, found = false;
     if(hist.bvs.length == 0) return { found: found, idx: idx };
