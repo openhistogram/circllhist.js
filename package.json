@@ -1,19 +1,19 @@
 {
   "name": "circllhist.js",
   "version": "1.0.2",
-  "description": "Circonus log-linear histograms",
+  "description": "OpenHistogram log-linear histograms",
   "main": "index.js",
   "scripts": {
     "test": "./runtest.sh"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/circonus-labs/circllhist.js.git"
+    "url": "git+https://github.com/openhistogram/circllhist.js.git"
   },
   "author": "Theo Schlossnagle <theo.schlossnagle@circonus.com>",
-  "license": "BSD-2-Clause",
+  "license": "OpenHistogram OR BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/circonus-labs/circllhist.js/issues"
+    "url": "https://github.com/openhistogram/circllhist.js/issues"
   },
-  "homepage": "https://github.com/circonus-labs/circllhist.js#readme"
+  "homepage": "https://github.com/openhistogram/circllhist.js#readme"
 }
