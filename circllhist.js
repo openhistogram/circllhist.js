@@ -255,7 +255,7 @@ function circllhist() {
 
   function hist_count(hist) {
     var count = 0;
-    for(var i=0; i<hist.bvs.length; i++) {
+    for(var i=0, len = hist.bvs.length; i<len; i++) {
       if(hist_bucket_isnan(hist.bvs[i].bucket)) continue;
       count += hist.bvs[i].count;
     }
