@@ -153,6 +153,16 @@ function mean_test(vals, expected) {
     else notok("(mean() -> " + m + " != " + expected + ")\n");
   }
 }
+
+function count_test(vals, expected) {
+  return function() {
+    h = build(vals);
+    c = h.count();
+    if(c == expected) ok();
+    else notok("(count() -> " + c + " != " + expected + ")\n");
+  }
+}
+
 function q_test(vals, tin, expected) {
   return function () {
     var h = build(vals);
@@ -189,6 +199,9 @@ return function() {
   
     s1= [ 0.123, 0, 0.43, 0.41, 0.415, 0.2201, 0.3201, 0.125, 0.13 ];
     T("mean_test(s1, 0.24444)", mean_test(s1, 0.24444));
+
+    count_series = [1, 100, 1000];
+    T("count_test(count_series, 3)", count_test(count_series, 3));
   
     var h = [ 1 ];
     var qin = [ 0, 0.25, 0.5, 1 ];

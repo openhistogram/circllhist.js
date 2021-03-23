@@ -252,7 +252,16 @@ function circllhist() {
     }
     return sum;
   }
-  
+
+  function hist_count(hist) {
+    var count = 0;
+    for(var i=0, len = hist.bvs.length; i<len; i++) {
+      if(hist_bucket_isnan(hist.bvs[i].bucket)) continue;
+      count += hist.bvs[i].count;
+    }
+    return count;
+  }
+
   /* 0 success,
    * -1 (empty histogram),
    * -2 (out of order quantile request)
@@ -483,6 +492,7 @@ function circllhist() {
   o.prototype.approx_mean = function() { return hist_approx_mean(this); };
   o.prototype.approx_quantile = function(qin,qout) { return hist_approx_quantile(this,qin,qout); };
   o.prototype.approx_sum = function() { return hist_approx_sum(this); };
+  o.prototype.count = function() { return hist_count(this); };
   // Shortcuts
   o.prototype.mean = function() { return this.approx_mean(); };
   o.prototype.quantile = function(qin,qout) { return this.approx_quantile(qin,qout); };
